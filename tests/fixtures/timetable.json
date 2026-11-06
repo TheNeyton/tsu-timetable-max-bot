@@ -1,0 +1,517 @@
+{
+  "schedule/group": {
+    "grid": [
+      {
+        "date": "2026-11-02",
+        "lessons": [
+          {
+            "type": "LESSON",
+            "id": "176cdafd-0d33-4ee0-b3e4-d5db51210807",
+            "title": "Базы данных",
+            "lessonType": "LABORATORY",
+            "groups": [
+              {
+                "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+                "name": "932521 (б)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "2f563de1-51e1-11ed-8170-005056bc2da6",
+              "fullName": "Салимзянова Дарья Дмитриевна"
+            },
+            "audience": {
+              "id": "465e3398-c008-11ea-8117-005056bc52bb",
+              "name": "103б (2) Компьютерный класс",
+              "shortName": "103б (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 1,
+            "starts": 6300,
+            "ends": 12000
+          },
+          {
+            "type": "LESSON",
+            "id": "fcf87db6-6b28-440d-b386-6d23ddcaa22c",
+            "title": "Математический анализ",
+            "lessonType": "LECTURE",
+            "groups": [
+              {
+                "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+                "name": "932521",
+                "isSubgroup": false,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "bfe4f192-520b-11ed-8170-005056bc2da6",
+              "fullName": "Рожкова Светлана Владимировна"
+            },
+            "audience": {
+              "id": "594dc827-c01d-11ea-8117-005056bc52bb",
+              "name": "402 (2) Учебная аудитория",
+              "shortName": "402 (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 2,
+            "starts": 12900,
+            "ends": 18600
+          },
+          {
+            "type": "EMPTY",
+            "starts": 19500,
+            "ends": 25200,
+            "lessonNumber": 3
+          }
+        ]
+      },
+      {
+        "date": "2026-11-03",
+        "lessons": [
+          {
+            "type": "LESSON",
+            "id": "3291b612-7e71-4058-be08-aef6ece8a7e5",
+            "title": "Базы данных",
+            "lessonType": "LECTURE",
+            "groups": [
+              {
+                "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+                "name": "932521",
+                "isSubgroup": false,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "d21ce41f-5151-11ed-8170-005056bc2da6",
+              "fullName": "Бабанов Алексей Михайлович"
+            },
+            "audience": {
+              "id": null,
+              "name": "Онлайн",
+              "shortName": null,
+              "building": null
+            },
+            "lessonNumber": 1,
+            "starts": 6300,
+            "ends": 12000
+          },
+          {
+            "type": "LESSON",
+            "id": "0cbc3831-451f-4804-81ad-6ab79849a44f",
+            "title": "Элективные дисциплины по физической культуре и спорту",
+            "lessonType": "PRACTICE",
+            "groups": [
+              {
+                "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+                "name": "932521 (Ф)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "3ec6c796-529b-11ed-8170-005056bc2da6",
+              "fullName": "Иноземцева Татьяна Андреевна"
+            },
+            "audience": {
+              "id": "788c9741-6701-11ed-8145-005056bc52bb",
+              "name": "Спортивный зал 93 (14)",
+              "shortName": null,
+              "building": {
+                "id": "594fc0f2-f4d4-11eb-8132-005056bc52bb",
+                "name": "14 корпус",
+                "address": "пр. Ленина, 36к12",
+                "latitude": 56.46817,
+                "longitude": 84.946389
+              }
+            },
+            "lessonNumber": 2,
+            "starts": 12900,
+            "ends": 18600
+          },
+          {
+            "type": "LESSON",
+            "id": "47f25947-f568-4d39-a5f6-09685e5f90fc",
+            "title": "Базы данных",
+            "lessonType": "LABORATORY",
+            "groups": [
+              {
+                "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+                "name": "932521 (а)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "91228f62-51f9-11ed-8170-005056bc2da6",
+              "fullName": "Корсун Александр Викторович"
+            },
+            "audience": {
+              "id": "14143516-c00e-11ea-8117-005056bc52bb",
+              "name": "212а (2) Компьютерный класс",
+              "shortName": "212а (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 3,
+            "starts": 19500,
+            "ends": 25200
+          }
+        ]
+      }
+    ],
+    "groups": [
+      {
+        "id": "a1a4788e-3b8d-11f0-9dca-6cb3110a6d8e",
+        "faculty": {
+          "id": "3d973de1-9bbc-11e7-813b-005056bc249c",
+          "name": "Институт прикладной математики и компьютерных наук"
+        },
+        "name": "932521",
+        "isSubgroup": false
+      }
+    ],
+    "professors": [],
+    "audiences": [],
+    "hash": "41d746e35b8ae659b0372e87e1efcbbf0e1943146fa0cbb470c68aeaf3b75483"
+  },
+  "faculties/0bbf1b29-84ec-11e4-be9d-08606ee61ec5/groups": [
+    {
+      "id": "9c8490a3-3489-11f0-9dca-6cb3110a6d8e",
+      "name": "052310",
+      "isSubgroup": false,
+      "facultyId": "0bbf1b29-84ec-11e4-be9d-08606ee61ec5"
+    },
+    {
+      "id": "cfb19a97-3489-11f0-9dca-6cb3110a6d8e",
+      "name": "052320",
+      "isSubgroup": false,
+      "facultyId": "0bbf1b29-84ec-11e4-be9d-08606ee61ec5"
+    }
+  ],
+  "professors": [
+    {
+      "id": "ff2ed5b7-51e2-11ed-8170-005056bc2da6",
+      "fullName": "Абакумова Виктория Александровна"
+    },
+    {
+      "id": "a9debeb1-5151-11ed-8170-005056bc2da6",
+      "fullName": "Абакумова Наталия Николаевна"
+    }
+  ],
+  "schedule/professor": {
+    "grid": [
+      {
+        "date": "2026-11-02",
+        "lessons": [
+          {
+            "type": "LESSON",
+            "id": "8699ac12-58ec-47fe-86ed-7c799add9c11",
+            "title": "Линейная алгебра и аналитическая геометрия",
+            "lessonType": "PRACTICE",
+            "groups": [
+              {
+                "id": "43b31d40-8b15-11f1-9de8-6cb3110a6d8e",
+                "name": "932621",
+                "isSubgroup": false,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "c0341387-5151-11ed-8170-005056bc2da6",
+              "fullName": "Данилюк Елена Юрьевна"
+            },
+            "audience": {
+              "id": "2d9c6104-c00e-11ea-8117-005056bc52bb",
+              "name": "212б (2) Учебная аудитория ",
+              "shortName": "212б (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 1,
+            "starts": 6300,
+            "ends": 12000
+          },
+          {
+            "type": "LESSON",
+            "id": "fb4c7ff6-86ce-4adc-9810-3f8466995387",
+            "title": "Численные методы",
+            "lessonType": "LABORATORY",
+            "groups": [
+              {
+                "id": "6979c98d-2eff-11ef-815e-005056bc52bb",
+                "name": "932421 (а)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              },
+              {
+                "id": "98c1d406-2eff-11ef-815e-005056bc52bb",
+                "name": "932422 (а)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "c0341387-5151-11ed-8170-005056bc2da6",
+              "fullName": "Данилюк Елена Юрьевна"
+            },
+            "audience": {
+              "id": "c08812f6-c00d-11ea-8117-005056bc52bb",
+              "name": "208 (2) Компьютерный класс",
+              "shortName": "208 (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 2,
+            "starts": 12900,
+            "ends": 18600
+          },
+          {
+            "type": "LESSON",
+            "id": "46955d87-9458-4058-942d-80ff5f696fcb",
+            "title": "Численные методы",
+            "lessonType": "LABORATORY",
+            "groups": [
+              {
+                "id": "6979c98d-2eff-11ef-815e-005056bc52bb",
+                "name": "932421 (б)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              },
+              {
+                "id": "98c1d406-2eff-11ef-815e-005056bc52bb",
+                "name": "932422 (б)",
+                "isSubgroup": true,
+                "facultyId": "3d973de1-9bbc-11e7-813b-005056bc249c"
+              }
+            ],
+            "professor": {
+              "id": "c0341387-5151-11ed-8170-005056bc2da6",
+              "fullName": "Данилюк Елена Юрьевна"
+            },
+            "audience": {
+              "id": "14143516-c00e-11ea-8117-005056bc52bb",
+              "name": "212а (2) Компьютерный класс",
+              "shortName": "212а (2)",
+              "building": {
+                "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+                "name": "2 корпус",
+                "address": "пр. Ленина, 36к2",
+                "latitude": 56.46865105233865,
+                "longitude": 84.94516758526417
+              }
+            },
+            "lessonNumber": 3,
+            "starts": 19500,
+            "ends": 25200
+          }
+        ]
+      },
+      {
+        "date": "2026-11-03",
+        "lessons": [
+          {
+            "type": "EMPTY",
+            "starts": 6300,
+            "ends": 12000,
+            "lessonNumber": 1
+          },
+          {
+            "type": "EMPTY",
+            "starts": 12900,
+            "ends": 18600,
+            "lessonNumber": 2
+          },
+          {
+            "type": "EMPTY",
+            "starts": 19500,
+            "ends": 25200,
+            "lessonNumber": 3
+          }
+        ]
+      }
+    ],
+    "groups": [],
+    "professors": [
+      {
+        "id": "c0341387-5151-11ed-8170-005056bc2da6",
+        "fullName": "Данилюк Елена Юрьевна"
+      }
+    ],
+    "audiences": [],
+    "hash": "62b30144d15c5db463675df3bf8dcdd68adfcdade7fea26222f8f85ee8b9e021"
+  },
+  "buildings": [
+    {
+      "id": "b8ed2551-c1ad-11ea-8117-005056bc52bb",
+      "name": "1 корпус",
+      "address": "пр. Ленина, 36",
+      "latitude": 56.46953973955253,
+      "longitude": 84.94751051442465,
+      "image": "https://intime.tsu.ru/api/static/buildings/images/building1.jpg"
+    },
+    {
+      "id": "4761a634-bffd-11ea-8117-005056bc52bb",
+      "name": "2 корпус",
+      "address": "пр. Ленина, 36к2",
+      "latitude": 56.46865105233865,
+      "longitude": 84.94516758526417,
+      "image": "https://intime.tsu.ru/api/static/buildings/images/building2.jpg"
+    },
+    {
+      "id": "baf6794d-daea-11eb-812f-005056bc52bb",
+      "name": "18 корпус",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "image": "https://intime.tsu.ru/api/static/buildings/images/default.png"
+    }
+  ],
+  "buildings/b8ed2551-c1ad-11ea-8117-005056bc52bb/audiences": [
+    {
+      "id": "e43c8e13-c1b0-11ea-8117-005056bc52bb",
+      "name": "01 (1) Аудитория"
+    },
+    {
+      "id": "1d5924c6-c1b1-11ea-8117-005056bc52bb",
+      "name": "02 (1) Аудитория"
+    }
+  ],
+  "schedule/audience": {
+    "grid": [
+      {
+        "date": "2026-11-02",
+        "lessons": [
+          {
+            "type": "EMPTY",
+            "starts": 6300,
+            "ends": 12000,
+            "lessonNumber": 1
+          },
+          {
+            "type": "EMPTY",
+            "starts": 12900,
+            "ends": 18600,
+            "lessonNumber": 2
+          },
+          {
+            "type": "LESSON",
+            "id": "b160a5de-7599-4b33-bb74-09a8a46309c0",
+            "title": "Лабораторные работы по гидромеханике",
+            "lessonType": "LABORATORY",
+            "groups": [
+              {
+                "id": "459d9563-0a97-11ee-814d-005056bc52bb",
+                "name": "042304 (б)",
+                "isSubgroup": true,
+                "facultyId": "eaaf54af-84eb-11e4-be9d-08606ee61ec5"
+              }
+            ],
+            "professor": {
+              "id": "ae468179-5151-11ed-8170-005056bc2da6",
+              "fullName": "Агафонцев Михаил Владимирович"
+            },
+            "audience": {
+              "id": "a92e1a93-c1b4-11ea-8117-005056bc52bb",
+              "name": "13(1) Кафедра физической и вычислительной механики. Лаборатория аэротермохимии и гидромеханики ",
+              "shortName": "13 (1)",
+              "building": {
+                "id": "b8ed2551-c1ad-11ea-8117-005056bc52bb",
+                "name": "1 корпус",
+                "address": "пр. Ленина, 36",
+                "latitude": 56.46953973955253,
+                "longitude": 84.94751051442465
+              }
+            },
+            "lessonNumber": 3,
+            "starts": 19500,
+            "ends": 25200
+          }
+        ]
+      },
+      {
+        "date": "2026-11-03",
+        "lessons": [
+          {
+            "type": "EMPTY",
+            "starts": 6300,
+            "ends": 12000,
+            "lessonNumber": 1
+          },
+          {
+            "type": "EMPTY",
+            "starts": 12900,
+            "ends": 18600,
+            "lessonNumber": 2
+          },
+          {
+            "type": "EMPTY",
+            "starts": 19500,
+            "ends": 25200,
+            "lessonNumber": 3
+          }
+        ]
+      }
+    ],
+    "groups": [],
+    "professors": [],
+    "audiences": [
+      {
+        "id": "a92e1a93-c1b4-11ea-8117-005056bc52bb",
+        "name": "13(1) Кафедра физической и вычислительной механики. Лаборатория аэротермохимии и гидромеханики ",
+        "shortName": "13 (1)",
+        "building": {
+          "id": "b8ed2551-c1ad-11ea-8117-005056bc52bb",
+          "name": "1 корпус",
+          "address": "пр. Ленина, 36",
+          "latitude": 56.46953973955253,
+          "longitude": 84.94751051442465
+        }
+      }
+    ],
+    "hash": "e0a78e1a9e6f7e8eaf266b6f2b39a8f4e4f67de3d710d791153a3648ae9bcf3f"
+  },
+  "faculties": [
+    {
+      "id": "c69e9628-6663-11e9-8107-005056bc52bb",
+      "name": "Автономная образовательная программа TISP",
+      "avatar": "https://intime.tsu.ru/api/static/faculties/logo/tisp.png",
+      "color": "#E55D19",
+      "darkColor": "#E55D19"
+    },
+    {
+      "id": "611e2792-d6fc-11ef-9dc8-6cb3110a6d8e",
+      "name": "Высшая инженерная школа агробиотехнологий",
+      "avatar": "https://intime.tsu.ru/api/static/faculties/logo/agrobiotek.png",
+      "color": "#E64C19",
+      "darkColor": "#E64C19"
+    }
+  ]
+}
