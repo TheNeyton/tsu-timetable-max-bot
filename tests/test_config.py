@@ -8,7 +8,8 @@ from tsu_max_bot.config import ConfigurationError, Settings
 @pytest.fixture(autouse=True)
 def isolated_environment(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
-    for name in ("MAX_BOT_TOKEN", "TSU_API_BASE_URL", "TSU_API_TIMEOUT", "LOG_LEVEL"):
+    names = ("MAX_BOT_TOKEN", "TSU_API_BASE_URL", "TSU_API_TIMEOUT", "LOG_LEVEL", "DATABASE_URL")
+    for name in names:
         monkeypatch.delenv(name, raising=False)
 
 
@@ -38,6 +39,30 @@ def test_settings_read_environment_without_exposing_token(monkeypatch):
     assert settings.tsu_api_timeout == 3.5
     assert settings.log_level == "DEBUG"
     assert "secret" not in repr(settings)
+
+
+def test_database_defaults_to_local_sqlite(monkeypatch):
+    monkeypatch.setenv("MAX_BOT_TOKEN", "token")
+    assert Settings.from_env().database_url == "sqlite+aiosqlite:///tsu_max_bot.sqlite3"
+
+
+def test_mysql_url_selects_async_driver_without_exposing_password(monkeypatch):
+    monkeypatch.setenv("MAX_BOT_TOKEN", "token")
+    monkeypatch.setenv("DATABASE_URL", "mysql://bot:db-password@localhost:3306/timetable")
+
+    settings = Settings.from_env()
+
+    assert settings.database_url == "mysql+aiomysql://bot:db-password@localhost:3306/timetable"
+    assert "db-password" not in repr(settings)
+
+
+@pytest.mark.parametrize("url", ["postgresql://localhost/db", "mysql://bot@localhost", "sqlite://"])
+def test_invalid_database_url_is_rejected(monkeypatch, url):
+    monkeypatch.setenv("MAX_BOT_TOKEN", "token")
+    monkeypatch.setenv("DATABASE_URL", url)
+
+    with pytest.raises(ConfigurationError, match="DATABASE_URL"):
+        Settings.from_env()
 
 
 @pytest.mark.parametrize("timeout", ["abc", "0", "-1", "nan", "inf"])
