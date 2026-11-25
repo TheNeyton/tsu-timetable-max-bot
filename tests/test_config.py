@@ -23,6 +23,7 @@ def isolated_environment(monkeypatch, tmp_path):
         "YANDEX_FOLDER_ID",
         "YANDEX_MODEL",
         "SPEECHKIT_API_KEY",
+        "VOICE_MODEL_PATH",
     )
     for name in names:
         monkeypatch.delenv(name, raising=False)

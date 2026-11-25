@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.14,<1"]
+voice = ["av>=14,<19", "vosk>=0.3.45,<0.4"]
 
 [project.scripts]
 tsu-max-bot = "tsu_max_bot.__main__:main"

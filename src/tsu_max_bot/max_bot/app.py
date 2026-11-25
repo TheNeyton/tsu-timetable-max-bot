@@ -1,6 +1,8 @@
 import asyncio
 import logging
 from contextlib import AsyncExitStack
+from importlib.util import find_spec
+from pathlib import Path
 
 import httpx
 from aiohttp import web
@@ -8,8 +10,9 @@ from maxapi import Bot, Dispatcher
 
 from tsu_max_bot.alice import create_alice_app
 from tsu_max_bot.config import Settings
+from tsu_max_bot.max_bot.local_voice import LocalVoice
 from tsu_max_bot.max_bot.registration import Registration
-from tsu_max_bot.max_bot.voice import SpeechKit
+from tsu_max_bot.max_bot.voice import MaxVoice
 from tsu_max_bot.schedule.alice_handler import AliceSchedule
 from tsu_max_bot.schedule.service import ScheduleService
 from tsu_max_bot.storage import Database
@@ -62,14 +65,21 @@ async def _configure_max(
     dispatcher = Dispatcher()
     resources.push_async_callback(dispatcher.shutdown)
 
-    speechkit = (
-        SpeechKit(http, api_key=settings.speechkit_api_key) if settings.speechkit_api_key else None
-    )
+    local_voice = await asyncio.to_thread(_configure_local_voice, settings.voice_model_path)
+    voice = None
+    if settings.speechkit_api_key or local_voice is not None:
+        voice = MaxVoice(
+            http,
+            speechkit_api_key=settings.speechkit_api_key,
+            recognize_local=local_voice.recognize if local_voice else None,
+        )
+    else:
+        logger.info("Для распознавания аудио MAX установите модель Vosk или настройте SpeechKit.")
     registration = Registration(
         timetable,
         database,
         schedules=schedules,
-        transcribe=speechkit.transcribe if speechkit else None,
+        transcribe=voice.transcribe if voice else None,
     )
     dispatcher.bot_started()(registration.bot_started)
     dispatcher.message_created()(registration.message_created)
@@ -82,6 +92,17 @@ async def _configure_max(
         )
     await database.migrate()
     return dispatcher, bot
+
+
+def _configure_local_voice(path: str) -> LocalVoice | None:
+    model_path = Path(path).expanduser()
+    if not model_path.is_dir():
+        return None
+    if find_spec("av") is None or find_spec("vosk") is None:
+        logger.warning("Для локального распознавания установите зависимости проекта [voice].")
+        return None
+    logger.info("Локальное распознавание голосовых сообщений MAX включено.")
+    return LocalVoice(model_path)
 
 
 async def _start_alice(

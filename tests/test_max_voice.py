@@ -4,7 +4,7 @@ import httpx
 import pytest
 from maxapi.types.attachments.audio import Audio
 
-from tsu_max_bot.max_bot.voice import SpeechKit
+from tsu_max_bot.max_bot.voice import MaxVoice
 
 _AUDIO_URL = "https://audio.okcdn.ru/voice?id=secret"
 _OGG_OPUS = b"OggS" + b"\x00" * 22 + b"\x01\x13OpusHead\x01\x01" + b"\x00" * 9
@@ -12,6 +12,26 @@ _OGG_OPUS = b"OggS" + b"\x00" * 22 + b"\x01\x13OpusHead\x01\x01" + b"\x00" * 9
 
 def _audio(url=_AUDIO_URL):
     return Audio.model_validate({"type": "audio", "payload": {"url": url, "token": "max-token"}})
+
+
+@pytest.mark.parametrize("cloud_key", [None, "speechkit-secret"])
+def test_voice_recognizes_audio_locally_when_cloud_is_unconfigured_or_unavailable(cloud_key):
+    def api(request):
+        if request.method == "GET":
+            return httpx.Response(200, content=_OGG_OPUS)
+        assert cloud_key is not None
+        return httpx.Response(503)
+
+    def recognize(data):
+        assert data == _OGG_OPUS
+        return "расписание"
+
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(api)) as http:
+            voice = MaxVoice(http, speechkit_api_key=cloud_key, recognize_local=recognize)
+            assert await voice.transcribe(_audio()) == "расписание"
+
+    asyncio.run(run())
 
 
 def test_speechkit_reads_max_audio_without_credentials_and_transcribes_it():
@@ -38,9 +58,9 @@ def test_speechkit_reads_max_audio_without_credentials_and_transcribes_it():
             headers={"Authorization": "wrong-token"},
             cookies={"private": "cookie"},
         ) as http:
-            assert await SpeechKit(http, api_key="speechkit-secret").transcribe(_audio()) == (
-                "какие пары завтра"
-            )
+            assert await MaxVoice(http, speechkit_api_key="speechkit-secret").transcribe(
+                _audio()
+            ) == ("какие пары завтра")
 
     asyncio.run(scenario())
 
@@ -64,7 +84,9 @@ def test_speechkit_does_not_fetch_unapproved_audio_urls(url):
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio(url)) is None
+            assert (
+                await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio(url)) is None
+            )
 
     asyncio.run(scenario())
 
@@ -79,7 +101,7 @@ def test_speechkit_checks_download_redirects_even_if_client_follows_them(redirec
         async with httpx.AsyncClient(
             transport=httpx.MockTransport(transport), follow_redirects=True
         ) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio()) is None
+            assert await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio()) is None
 
     asyncio.run(scenario())
 
@@ -94,7 +116,10 @@ def test_speechkit_supports_redirects_between_max_cdn_hosts():
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio()) == "расписание"
+            assert (
+                await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio())
+                == "расписание"
+            )
 
     asyncio.run(scenario())
 
@@ -113,7 +138,7 @@ def test_speechkit_stops_reading_oversized_audio_even_without_content_length():
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio()) is None
+            assert await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio()) is None
 
     asyncio.run(scenario())
 
@@ -126,7 +151,7 @@ def test_speechkit_does_not_send_unsupported_audio(data):
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio()) is None
+            assert await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio()) is None
 
     asyncio.run(scenario())
 
@@ -143,6 +168,6 @@ def test_speechkit_falls_back_when_recognition_produces_no_text(status, body):
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as http:
-            assert await SpeechKit(http, api_key="test-key").transcribe(_audio()) is None
+            assert await MaxVoice(http, speechkit_api_key="test-key").transcribe(_audio()) is None
 
     asyncio.run(scenario())

@@ -31,6 +31,7 @@ class Settings:
     yandex_folder_id: str | None = None
     yandex_model: str = "yandexgpt-5-pro"
     speechkit_api_key: str | None = field(default=None, repr=False)
+    voice_model_path: str = "models/vosk-model-small-ru-0.22"
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -91,6 +92,7 @@ class Settings:
             yandex_folder_id=yandex_folder_id,
             yandex_model=os.getenv("YANDEX_MODEL", cls.yandex_model).strip() or cls.yandex_model,
             speechkit_api_key=os.getenv("SPEECHKIT_API_KEY", "").strip() or None,
+            voice_model_path=os.getenv("VOICE_MODEL_PATH", "").strip() or cls.voice_model_path,
         )
 
 
