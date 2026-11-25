@@ -8,7 +8,22 @@ from tsu_max_bot.config import ConfigurationError, Settings
 @pytest.fixture(autouse=True)
 def isolated_environment(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
-    names = ("MAX_BOT_TOKEN", "TSU_API_BASE_URL", "TSU_API_TIMEOUT", "LOG_LEVEL", "DATABASE_URL")
+    names = (
+        "MAX_BOT_TOKEN",
+        "TSU_API_BASE_URL",
+        "TSU_API_TIMEOUT",
+        "LOG_LEVEL",
+        "DATABASE_URL",
+        "ALICE_ENABLED",
+        "ALICE_HOST",
+        "ALICE_PORT",
+        "ALICE_WEBHOOK_PATH",
+        "ALICE_SKILL_ID",
+        "YANDEX_API_KEY",
+        "YANDEX_FOLDER_ID",
+        "YANDEX_MODEL",
+        "SPEECHKIT_API_KEY",
+    )
     for name in names:
         monkeypatch.delenv(name, raising=False)
 
@@ -79,6 +94,30 @@ def test_invalid_timeout_is_rejected(monkeypatch, timeout):
 )
 def test_invalid_config_is_rejected(monkeypatch, name, value):
     monkeypatch.setenv("MAX_BOT_TOKEN", "secret")
+    monkeypatch.setenv(name, value)
+    with pytest.raises(ConfigurationError, match=name):
+        Settings.from_env()
+
+
+def test_alice_can_run_without_max_and_secrets_are_hidden(monkeypatch):
+    monkeypatch.setenv("ALICE_ENABLED", "true")
+    monkeypatch.setenv("ALICE_PORT", "8090")
+    monkeypatch.setenv("YANDEX_FOLDER_ID", "folder")
+    monkeypatch.setenv("YANDEX_API_KEY", "model-secret")
+    monkeypatch.setenv("SPEECHKIT_API_KEY", "speech-secret")
+
+    settings = Settings.from_env()
+
+    assert settings.alice_enabled
+    assert settings.max_bot_token == ""
+    assert settings.alice_port == 8090
+    assert "model-secret" not in repr(settings)
+    assert "speech-secret" not in repr(settings)
+
+
+@pytest.mark.parametrize(("name", "value"), [("ALICE_PORT", "65536"), ("ALICE_WEBHOOK_PATH", "?")])
+def test_invalid_alice_config_is_rejected(monkeypatch, name, value):
+    monkeypatch.setenv("ALICE_ENABLED", "true")
     monkeypatch.setenv(name, value)
     with pytest.raises(ConfigurationError, match=name):
         Settings.from_env()

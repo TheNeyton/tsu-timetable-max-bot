@@ -1,0 +1,95 @@
+import asyncio
+
+import httpx
+from maxapi.types.attachments.audio import Audio
+
+_RECOGNITION_URL = "https://stt.api.cloud.yandex.net/speech/v1/stt:recognize"
+_MAX_CDN_DOMAINS = ("okcdn.ru", "oneme.ru")
+_MAX_AUDIO_BYTES = 1_000_000
+_MAX_REDIRECTS = 3
+_TOTAL_TIMEOUT = 15.0
+
+
+def _is_max_cdn(url: httpx.URL) -> bool:
+    host = url.host
+    return (
+        url.scheme == "https"
+        and url.port in (None, 443)
+        and not url.userinfo
+        and any(host == domain or host.endswith(f".{domain}") for domain in _MAX_CDN_DOMAINS)
+    )
+
+
+def _is_mono_ogg_opus(data: bytes) -> bool:
+    if len(data) < 28 or not data.startswith(b"OggS"):
+        return False
+    # The first Ogg packet starts after the page header and its segment table.
+    start = 27 + data[26]
+    return (
+        len(data) >= start + 19 and data[start : start + 8] == b"OpusHead" and data[start + 9] == 1
+    )
+
+
+class SpeechKit:
+    """Recognize short, mono Ogg Opus recordings from MAX using SpeechKit v1."""
+
+    def __init__(self, http: httpx.AsyncClient, *, api_key: str) -> None:
+        self._http = http
+        self._api_key = api_key
+
+    async def transcribe(self, audio: Audio) -> str | None:
+        url = getattr(audio.payload, "url", None)
+        if not url:
+            return None
+        try:
+            async with asyncio.timeout(_TOTAL_TIMEOUT):
+                data = await self._download(httpx.URL(url))
+                if data is None or not _is_mono_ogg_opus(data):
+                    return None
+                request = httpx.Request(
+                    "POST",
+                    _RECOGNITION_URL,
+                    params={"lang": "ru-RU", "format": "oggopus"},
+                    content=data,
+                    headers={
+                        "Authorization": f"Api-Key {self._api_key}",
+                        "Content-Type": "audio/ogg",
+                        "X-Data-Logging-Enabled": "false",
+                    },
+                )
+                response = await self._http.send(request, auth=None, follow_redirects=False)
+                response.raise_for_status()
+                decoded = response.json()
+        except (httpx.HTTPError, httpx.InvalidURL, ValueError, TimeoutError, RecursionError):
+            return None
+
+        result = decoded.get("result") if isinstance(decoded, dict) else None
+        return (result.strip() or None) if isinstance(result, str) else None
+
+    async def _download(self, url: httpx.URL) -> bytes | None:
+        for _ in range(_MAX_REDIRECTS + 1):
+            if not _is_max_cdn(url):
+                return None
+            # Build requests directly to keep the client's default credentials and cookies out.
+            request = httpx.Request("GET", url, headers={"Accept-Encoding": "identity"})
+            response = await self._http.send(
+                request, stream=True, auth=None, follow_redirects=False
+            )
+            try:
+                if response.has_redirect_location:
+                    url = url.join(response.headers["location"])
+                    continue
+                response.raise_for_status()
+                if response.headers.get("content-encoding", "identity").lower() != "identity":
+                    return None
+                if int(response.headers.get("content-length", "0")) > _MAX_AUDIO_BYTES:
+                    return None
+                data = bytearray()
+                async for chunk in response.aiter_bytes():
+                    if len(data) + len(chunk) > _MAX_AUDIO_BYTES:
+                        return None
+                    data.extend(chunk)
+                return bytes(data)
+            finally:
+                await response.aclose()
+        return None

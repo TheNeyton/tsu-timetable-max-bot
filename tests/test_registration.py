@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import httpx
+import pytest
 from maxapi.types import BotStarted, MessageCallback, MessageCreated
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -32,14 +33,14 @@ def start_button(bot):
     return BotStarted(timestamp=0, chat_id=12, user=USER, bot=bot)
 
 
-def message(bot, text, *, chat_type="dialog"):
+def message(bot, text, *, chat_type="dialog", attachments=None):
     return MessageCreated(
         timestamp=0,
         message={
             "timestamp": 0,
             "sender": USER,
             "recipient": {**RECIPIENT, "chat_type": chat_type},
-            "body": {"mid": "message", "seq": 1, "text": text},
+            "body": {"mid": "message", "seq": 1, "text": text, "attachments": attachments},
             "bot": bot,
         },
     )
@@ -188,15 +189,152 @@ def test_group_callback_can_retry_after_catalog_and_database_failure():
     asyncio.run(run())
 
 
-def test_other_messages_keep_echo_behavior():
+def test_max_help_does_not_echo_messages_or_read_profile():
     async def run():
-        database = SimpleNamespace(get_user=AsyncMock())
+        database = SimpleNamespace(
+            get_user=AsyncMock(), get_schedule_context=AsyncMock(return_value=None)
+        )
         async with httpx.AsyncClient() as http:
             registration = Registration(TimetableClient(http), database)
             bot = max_bot()
             for text, chat_type in [("<b>Привет</b>", "dialog"), ("/start", "chat")]:
                 await registration.message_created(message(bot, text, chat_type=chat_type))
-                assert bot.send_message.await_args.kwargs["text"] == text
+                assert "расписание" in bot.send_message.await_args.kwargs["text"].lower()
+            bot.send_message.reset_mock()
+            await registration.message_created(message(bot, "Какие пары завтра?", chat_type="chat"))
+            bot.send_message.assert_not_awaited()
         database.get_user.assert_not_awaited()
+
+    asyncio.run(run())
+
+
+def test_max_changes_group_and_faculty_then_answers_followup_after_restart(tmp_path):
+    async def run():
+        path = (tmp_path / "schedule.sqlite3").as_posix()
+        database = Database(f"sqlite+aiosqlite:///{path}")
+        await database.migrate()
+        await database.save_user(RegisteredUser(USER_ID, "science", "ФизФ", "group-01", "01"))
+        queries = []
+
+        def api(request):
+            if request.url.path.endswith("/faculties"):
+                return httpx.Response(200, json=[{"id": "math", "name": "Факультет математики"}])
+            if request.url.path.endswith("/science/groups"):
+                return httpx.Response(200, json=GROUPS[:2])
+            if request.url.path.endswith("/math/groups"):
+                return httpx.Response(200, json=[{**GROUPS[0], "id": "math-1", "name": "862401"}])
+            if request.url.path.endswith("/schedule/group"):
+                queries.append(dict(request.url.params))
+                return httpx.Response(200, json={"grid": []})
+            return httpx.Response(404)
+
+        try:
+            async with httpx.AsyncClient(transport=httpx.MockTransport(api)) as http:
+                timetable = TimetableClient(http)
+                registration = Registration(timetable, database)
+                bot = max_bot()
+                await registration.message_created(message(bot, "/group"))
+                _, groups = latest_keyboard(bot)
+                await registration.message_callback(callback(bot, groups["2"]))
+                profile = await database.get_user(USER_ID)
+                assert profile is not None and profile.group_id == "group-2"
+
+                await registration.message_created(message(bot, "Какие пары 26.11.2026?"))
+                assert "26 ноября" in bot.send_message.await_args.kwargs["text"]
+                restarted = Registration(timetable, database)
+                await restarted.message_created(message(bot, "А на следующий день?"))
+                assert "27 ноября" in bot.send_message.await_args.kwargs["text"]
+                assert queries == [
+                    {"id": "group-2", "dateFrom": day, "dateTo": day}
+                    for day in ("2026-11-26", "2026-11-27")
+                ]
+
+                bot.send_callback.reset_mock()
+                await restarted.message_created(message(bot, "/faculty"))
+                _, faculties = latest_keyboard(bot)
+                await restarted.message_callback(callback(bot, faculties["1"]))
+                _, new_groups = latest_keyboard(bot)
+                assert await database.get_user(USER_ID) == profile
+                await restarted.message_callback(callback(bot, new_groups["1"]))
+                updated = await database.get_user(USER_ID)
+                assert updated is not None and (updated.faculty_id, updated.group_id) == (
+                    "math",
+                    "math-1",
+                )
+                assert await database.get_schedule_context(RECIPIENT["chat_id"], USER_ID) is None
+        finally:
+            await database.close()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("teacher", ["Иванова", "Иван Иванов"])
+def test_max_voice_transcription_uses_schedule_for_explicit_teacher(teacher):
+    async def run():
+        calls = []
+
+        def api(request):
+            calls.append(request)
+            if request.url.path.endswith("/professors"):
+                return httpx.Response(
+                    200, json=[{"id": "teacher-1", "fullName": "Иванов Иван Иванович"}]
+                )
+            if request.url.path.endswith("/schedule/professor"):
+                return httpx.Response(200, json={"grid": []})
+            return httpx.Response(404)
+
+        database = SimpleNamespace(
+            get_user=AsyncMock(return_value=None),
+            get_schedule_context=AsyncMock(return_value=None),
+            save_schedule_context=AsyncMock(),
+        )
+        transcribe = AsyncMock()
+        async with httpx.AsyncClient(transport=httpx.MockTransport(api)) as http:
+            registration = Registration(TimetableClient(http), database, transcribe=transcribe)
+            bot = max_bot()
+            await registration.message_created(
+                message(
+                    bot,
+                    None,
+                    attachments=[
+                        {
+                            "type": "audio",
+                            "payload": {
+                                "url": "https://cdn.oneme.ru/example",
+                                "token": "audio-token",
+                            },
+                            "transcription": f"Расписание преподавателя {teacher} на 26.11.2026",
+                        }
+                    ],
+                )
+            )
+
+        assert "Иванов Иван" in bot.send_message.await_args.kwargs["text"]
+        assert dict(calls[-1].url.params) == {
+            "id": "teacher-1",
+            "dateFrom": "2026-11-26",
+            "dateTo": "2026-11-26",
+        }
+        transcribe.assert_not_awaited()
+
+    asyncio.run(run())
+
+
+def test_max_returns_friendly_error_for_failed_schedule_request(tmp_path):
+    async def run():
+        path = (tmp_path / "schedule.sqlite3").as_posix()
+        database = Database(f"sqlite+aiosqlite:///{path}")
+        await database.migrate()
+        await database.save_user(RegisteredUser(USER_ID, "science", "ФизФ", "group-01", "01"))
+
+        try:
+            transport = httpx.MockTransport(lambda request: httpx.Response(503))
+            async with httpx.AsyncClient(transport=transport) as http:
+                bot = max_bot()
+                registration = Registration(TimetableClient(http), database)
+                await registration.message_created(message(bot, "Какие пары завтра?"))
+                assert "временно недоступно" in bot.send_message.await_args.kwargs["text"]
+        finally:
+            await database.close()
 
     asyncio.run(run())

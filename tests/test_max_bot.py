@@ -5,25 +5,22 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
+from maxapi.enums import ChatType
 from sqlalchemy.exc import OperationalError
 
 from tsu_max_bot.config import Settings
 from tsu_max_bot.max_bot.app import run_bot
-from tsu_max_bot.max_bot.handlers import echo_message
+from tsu_max_bot.max_bot.handlers import send_schedule
+from tsu_max_bot.max_bot.registration import Registration
 
 
-@pytest.mark.parametrize("text", ["Здравствуйте!", "/start", "<b>Тест</b> **расписание**"])
-def test_echo_preserves_text(text):
+def test_schedule_reply_respects_max_message_limit(monkeypatch):
     answer = AsyncMock()
-    event = SimpleNamespace(
-        message=SimpleNamespace(
-            sender=SimpleNamespace(is_bot=False), body=SimpleNamespace(text=text), answer=answer
-        )
-    )
+    monkeypatch.setattr("tsu_max_bot.max_bot.handlers.asyncio.sleep", AsyncMock())
+    lines = ["а" * 3999, "б" * 4000, "в" * 3]
 
-    asyncio.run(echo_message(event))
-
-    answer.assert_awaited_once_with(text)
+    assert asyncio.run(send_schedule("\n".join(lines), answer))
+    assert [call.args[0] for call in answer.await_args_list] == lines
 
 
 @pytest.mark.parametrize(
@@ -32,15 +29,22 @@ def test_echo_preserves_text(text):
         (None, SimpleNamespace(text="Привет")),
         (SimpleNamespace(is_bot=True), SimpleNamespace(text="Привет")),
         (SimpleNamespace(is_bot=False), None),
-        (SimpleNamespace(is_bot=False), SimpleNamespace(text=None)),
-        (SimpleNamespace(is_bot=False), SimpleNamespace(text="")),
+        (SimpleNamespace(is_bot=False), SimpleNamespace(text=None, attachments=[])),
+        (SimpleNamespace(is_bot=False), SimpleNamespace(text="", attachments=[])),
     ],
 )
 def test_non_text_and_bot_messages_are_ignored(sender, body):
     answer = AsyncMock()
-    event = SimpleNamespace(message=SimpleNamespace(sender=sender, body=body, answer=answer))
+    event = SimpleNamespace(
+        message=SimpleNamespace(
+            sender=sender,
+            body=body,
+            answer=answer,
+            recipient=SimpleNamespace(chat_type=ChatType.DIALOG),
+        )
+    )
 
-    asyncio.run(echo_message(event))
+    asyncio.run(Registration(SimpleNamespace(), SimpleNamespace()).message_created(event))
 
     answer.assert_not_awaited()
 

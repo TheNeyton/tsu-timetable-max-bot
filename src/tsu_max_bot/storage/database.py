@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import BigInteger, Column, MetaData, String, Table, Text, select
+from sqlalchemy import JSON, BigInteger, Column, MetaData, String, Table, Text, delete, select
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.engine import URL, Connection, make_url
@@ -19,6 +19,15 @@ registered_users = Table(
     Column("faculty_name", Text, nullable=False),
     Column("group_id", String(255), nullable=False),
     Column("group_name", Text, nullable=False),
+    mysql_charset="utf8mb4",
+    mysql_engine="InnoDB",
+)
+schedule_contexts = Table(
+    "schedule_contexts",
+    metadata,
+    Column("user_id", BigInteger, primary_key=True, autoincrement=False),
+    Column("chat_id", BigInteger, primary_key=True, autoincrement=False),
+    Column("context", JSON, nullable=False),
     mysql_charset="utf8mb4",
     mysql_engine="InnoDB",
 )
@@ -64,6 +73,38 @@ class Database:
             insert = mysql_insert(registered_users).values(max_user_id=max_user_id, **fields)
             query = insert.on_duplicate_key_update(**fields)
 
+        async with self._engine.begin() as connection:
+            await connection.execute(query)
+            await connection.execute(
+                delete(schedule_contexts).where(schedule_contexts.c.user_id == max_user_id)
+            )
+
+    async def get_schedule_context(self, chat_id: int, user_id: int) -> dict[str, object] | None:
+        query = select(schedule_contexts.c.context).where(
+            schedule_contexts.c.chat_id == chat_id, schedule_contexts.c.user_id == user_id
+        )
+        async with self._engine.connect() as connection:
+            return (await connection.execute(query)).scalar_one_or_none()
+
+    async def save_schedule_context(
+        self, chat_id: int, user_id: int, context: dict[str, object]
+    ) -> None:
+        fields = {"chat_id": chat_id, "user_id": user_id, "context": context}
+        if self._engine.dialect.name == "sqlite":
+            query = (
+                sqlite_insert(schedule_contexts)
+                .values(**fields)
+                .on_conflict_do_update(
+                    index_elements=[schedule_contexts.c.user_id, schedule_contexts.c.chat_id],
+                    set_={"context": context},
+                )
+            )
+        else:
+            query = (
+                mysql_insert(schedule_contexts)
+                .values(**fields)
+                .on_duplicate_key_update(context=context)
+            )
         async with self._engine.begin() as connection:
             await connection.execute(query)
 

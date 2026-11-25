@@ -15,6 +15,8 @@ def main() -> None:
         level=settings.log_level,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    for client_logger in ("httpx", "httpcore"):
+        logging.getLogger(client_logger).setLevel(logging.WARNING)
     try:
         asyncio.run(run_bot(settings))
     except KeyboardInterrupt:
